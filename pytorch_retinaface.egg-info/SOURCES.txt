@@ -1,0 +1,7 @@
+LICENSE.MIT
+README.md
+setup.py
+pytorch_retinaface.egg-info/PKG-INFO
+pytorch_retinaface.egg-info/SOURCES.txt
+pytorch_retinaface.egg-info/dependency_links.txt
+pytorch_retinaface.egg-info/top_level.txt
