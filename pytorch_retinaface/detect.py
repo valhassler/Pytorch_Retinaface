@@ -5,11 +5,11 @@ import argparse
 import torch
 import torch.backends.cudnn as cudnn
 import numpy as np
-from layers.functions.prior_box import PriorBox
-from utils.nms.py_cpu_nms import py_cpu_nms
+from pytorch_retinaface.utils.nms.py_cpu_nms import py_cpu_nms
+from pytorch_retinaface.layers.functions.prior_box import PriorBox
 import cv2
-from models.retinaface import RetinaFace
-from utils.box_utils import decode, decode_landm
+from pytorch_retinaface.models.retinaface import RetinaFace
+from pytorch_retinaface.utils.box_utils import decode, decode_landm
 
 
 class Args:
@@ -90,14 +90,27 @@ def load_Retinanet(model_path):
     net = net.to("cuda")
     return net
 
-def process_image(image_path, model):
+def process_image(model, image_path, verbose=False):
+    """
+    Image path can either be a path or a numpy array
+    
+    """
     cudnn.benchmark = True
     device = "cuda"
     resize = 1
 
     # testing begin
-    img_raw = cv2.imread(image_path, cv2.IMREAD_COLOR)
+    if isinstance(image_path , str): 
+        img_raw = cv2.imread(image_path, cv2.IMREAD_COLOR)
+    elif isinstance(image_path, np.ndarray):
+        img_raw = image_path[:, :, ::-1] # RGB to BGR
+    else:
+        raise ValueError("Image path must be a string or a numpy array")
     img = np.float32(img_raw)
+    if verbose:
+        import matplotlib.pyplot as plt
+        plt.imshow(img_raw)
+        plt.show()
 
     im_height, im_width, _ = img.shape
     scale = torch.Tensor([img.shape[1], img.shape[0], img.shape[1], img.shape[0]])
@@ -156,7 +169,7 @@ def process_image(image_path, model):
             continue
         b = list(map(int, b))
         face_key = f"face_{i}"
-        faces[face_key] = (b)
+        faces[face_key] = (b[0:4])
     return faces
 
 
@@ -182,7 +195,8 @@ def process_image(image_path, model):
     # name = "test.jpg"
     # cv2.imwrite(name, img_raw)
 
-image_path = "/usr/users/vhassle/datasets/example_images/children/Screenshot 2024-05-30 at 19.50.35.png"
 
-
-# Loadit -> return the face Bounding boxes return faces einfach eine Funktion die ich find faces nenne
+# model = load_Retinanet("/usr/users/vhassle/psych_track/Pytorch_Retinaface/Resnet50_Final.pth")
+# image_path = "/usr/users/vhassle/datasets/example_images/children/Screenshot 2024-05-30 at 19.50.35.png"
+# faces = process_image(image_path, model)
+# print(faces)

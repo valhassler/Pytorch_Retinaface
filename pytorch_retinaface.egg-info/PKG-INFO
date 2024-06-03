@@ -1,4 +1,7 @@
 Metadata-Version: 2.1
 Name: pytorch_retinaface
-Version: 0.0.0
+Version: 0.1
 License-File: LICENSE.MIT
+Requires-Dist: torch
+Requires-Dist: numpy
+Requires-Dist: opencv-python
