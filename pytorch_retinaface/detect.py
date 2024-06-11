@@ -16,7 +16,7 @@ class Args:
     def __init__(self):
         self.trained_model = "/usr/users/vhassle/psych_track/Pytorch_Retinaface/Resnet50_Final.pth"
         self.cpu = False
-        self.confidence_threshold = 0.02
+        self.confidence_threshold = 0.9
         self.top_k = 5000
         self.nms_threshold = 0.4
         self.keep_top_k = 750
@@ -119,12 +119,13 @@ def process_image(model, image_path, verbose=False):
     img = torch.from_numpy(img).unsqueeze(0)
     img = img.to(device)
     scale = scale.to(device)
-
-    loc, conf, landms = model(img)  # forward pass
+    with torch.autocast(device_type=device, dtype=torch.float16, enabled=True):
+        loc, conf, landms = model(img)  # forward pass
     priorbox = PriorBox(CFG_RES50, image_size=(im_height, im_width))
-    priors = priorbox.forward()
-    priors = priors.to(device)
-    prior_data = priors.data
+    with torch.autocast(device_type=device, dtype=torch.float16, enabled=True):
+        priors = priorbox.forward()
+        priors = priors.to(device)
+        prior_data = priors.data
     boxes = decode(loc.data.squeeze(0), prior_data, CFG_RES50['variance'])
     boxes = boxes * scale / resize
     boxes = boxes.cpu().numpy()
